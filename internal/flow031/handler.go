@@ -51,14 +51,13 @@ func (h *Handler) ExportSearch(query model.SearchQuery) ([][]byte, error) {
 		return nil, err
 	}
 	result := make([][]byte, 0, len(records))
-	for index, record := range records {
+	for _, record := range records {
 		doc, documentErr := h.exporter.Document(record.ID)
 		if documentErr != nil {
 			return nil, documentErr
 		}
-		if index == 1 && record.PreviousAddr != "" {
-			doc.Address = record.PreviousAddr
-		}
+		// Export must reflect the record's current address. Do not substitute
+		// the previous address for any row — that would emit stale data.
 		payload, marshalErr := marshalDocument(doc)
 		if marshalErr != nil {
 			return nil, marshalErr
